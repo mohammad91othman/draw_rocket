@@ -1,9 +1,4 @@
-/*
-See LICENSE folder for this sample’s licensing information.
 
-Abstract:
-`ThumbnailCollectionViewController` shows a set of thumbnails of all drawings.
-*/
 
 import UIKit
 import PencilKit

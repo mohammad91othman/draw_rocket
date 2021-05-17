@@ -1,42 +1,20 @@
-/*
-See LICENSE folder for this sample’s licensing information.
 
-Abstract:
-`DrawingViewController` is the primary view controller for showing drawings.
-*/
-
-///`PKCanvasView` is the main drawing view that you will add to your view hierarchy.
-/// The drawingPolicy dictates whether drawing with a finger is allowed.  If it's set to default and if the tool picker is visible,
-/// then it will respect the global finger pencil toggle in Settings or as set in the tool picker.  Otherwise, only drawing with
-/// a pencil is allowed.
-
-/// You can add your own class as a delegate of PKCanvasView to receive notifications after a user
-/// has drawn or the drawing was updated. You can also set the tool or toggle the ruler on the canvas.
-
-/// There is a shared tool picker for each window. The tool picker floats above everything, similar
-/// to the keyboard. The tool picker is moveable in a regular size class window, and fixed to the bottom
-/// in compact size class. To listen to tool picker notifications, add yourself as an observer.
-
-/// Tool picker visibility is based on first responders. To make the tool picker appear, you need to
-/// associate the tool picker with a `UIResponder` object, such as a view, by invoking the method
-/// `UIToolpicker.setVisible(_:forResponder:)`, and then by making that responder become the first
-
-/// Best practices:
-///
-/// -- Because the tool picker palette is floating and moveable for regular size classes, but fixed to the
-/// bottom in compact size classes, make sure to listen to the tool picker's obscured frame and adjust your UI accordingly.
-
-/// -- For regular size classes, the palette has undo and redo buttons, but not for compact size classes.
-/// Make sure to provide your own undo and redo buttons when in a compact size class.
 
 import UIKit
 import PencilKit
+import MultipeerConnectivity
 
-class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserver, UIScreenshotServiceDelegate {
-    
+
+class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPickerObserver, UIScreenshotServiceDelegate ,MCSessionDelegate, MCBrowserViewControllerDelegate  {
+ 
+    @IBOutlet weak var offOnlineLabel: UILabel!
     @IBOutlet weak var canvasView: PKCanvasView!
     @IBOutlet var undoBarButtonitem: UIBarButtonItem!
     @IBOutlet var redoBarButtonItem: UIBarButtonItem!
+    
+    var peerID:MCPeerID!
+    var mcSession:MCSession!
+    var mcAdvertiserAssistant:MCAdvertiserAssistant!
     
     var toolPicker: PKToolPicker!
     var signDrawingItem: UIBarButtonItem!
@@ -55,8 +33,16 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
     var hasModifiedDrawing = false
     
     // MARK: View Life Cycle
-    
-    /// Set up the drawing initially.
+    override func viewDidLoad() {
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(self.sendD(notification:)), name: NSNotification.Name(rawValue: "sendD"), object: nil)
+        peerID = MCPeerID(displayName: UIDevice.current.name)
+        mcSession = MCSession(peer: peerID, securityIdentity: nil, encryptionPreference: .required)
+        mcSession.delegate = self
+    }
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
@@ -64,6 +50,8 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         canvasView.delegate = self
         canvasView.drawing = dataModelController.drawings[drawingIndex]
         canvasView.alwaysBounceVertical = true
+        
+  
         
         // Set up the tool picker
         if #available(iOS 14.0, *) {
@@ -82,8 +70,7 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         canvasView.becomeFirstResponder()
         
         // Add a button to sign the drawing in the bottom right hand corner of the page
-        signDrawingItem = UIBarButtonItem(title: "Sign Drawing", style: .plain, target: self, action: #selector(signDrawing(sender:)))
-        navigationItem.rightBarButtonItems?.append(signDrawingItem)
+      
         
         // Before iOS 14, add a button to toggle finger drawing.
         if #available(iOS 14.0, *) { } else {
@@ -100,6 +87,8 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         
         // Set this view controller as the delegate for creating full screenshots.
         parent?.view.window?.windowScene?.screenshotService?.delegate = self
+        
+
     }
     
     /// When the view is resized, adjust the canvas scale so that it is zoomed to the default `canvasWidth`.
@@ -157,15 +146,24 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
     /// Action method: Add a signature to the current drawing.
     @IBAction func signDrawing(sender: UIBarButtonItem) {
         
-        // Get the signature drawing at the canvas scale.
-        var signature = dataModelController.signature
-        let signatureBounds = signature.bounds
-        let loc = CGPoint(x: canvasView.bounds.maxX, y: canvasView.bounds.maxY)
-        let scaledLoc = CGPoint(x: loc.x / canvasView.zoomScale, y: loc.y / canvasView.zoomScale)
-        signature.transform(using: CGAffineTransform(translationX: scaledLoc.x - signatureBounds.maxX, y: scaledLoc.y - signatureBounds.maxY))
-
-        // Add the signature drawing to the current canvas drawing.
-        setNewDrawingUndoable(canvasView.drawing.appending(signature))
+        let actionSheet = UIAlertController(title: "HOST & JOIN", message: "Do you want to Host or Join a Drawing?", preferredStyle: .actionSheet)
+        
+        actionSheet.addAction(UIAlertAction(title: "Host Draw", style: .default, handler: { (action:UIAlertAction) in
+            
+            self.mcAdvertiserAssistant = MCAdvertiserAssistant(serviceType: "ba-td", discoveryInfo: nil, session: self.mcSession)
+            self.mcAdvertiserAssistant.start()
+            
+        }))
+        
+        actionSheet.addAction(UIAlertAction(title: "Join Draw", style: .default, handler: { (action:UIAlertAction) in
+            let mcBrowser = MCBrowserViewController(serviceType: "ba-td", session: self.mcSession)
+            mcBrowser.delegate = self
+            self.present(mcBrowser, animated: true, completion: nil)
+        }))
+        
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        self.present(actionSheet, animated: true, completion: nil)
     }
     
     // MARK: Navigation
@@ -192,31 +190,43 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         // Adjust the content size to always be bigger than the drawing height.
         if !drawing.bounds.isNull {
             contentHeight = max(canvasView.bounds.height, (drawing.bounds.maxY + DrawingViewController.canvasOverscrollHeight) * canvasView.zoomScale)
+            dataModelController.updateDrawing(canvasView.drawing, at: drawingIndex)
+            dataModelController.loadData()
+           
         } else {
             contentHeight = canvasView.bounds.height
         }
         canvasView.contentSize = CGSize(width: DataModel.canvasWidth * canvasView.zoomScale, height: contentHeight)
     }
+    func updateContentSizeForDrawingFromSender(canvas: PKDrawing ) {
+        // Update the content size to match the drawing.
+        let drawing = canvas
+        let contentHeight: CGFloat
+        
+        // Adjust the content size to always be bigger than the drawing height.
+        if !drawing.bounds.isNull {
+            contentHeight = max(canvasView.bounds.height, (drawing.bounds.maxY + DrawingViewController.canvasOverscrollHeight) * canvasView.zoomScale)
+            dataModelController.updateDrawing(drawing, at: drawingIndex)
+
+           
+        } else {
+            contentHeight = canvasView.bounds.height
+        }
+        canvasView.contentSize = CGSize(width: DataModel.canvasWidth * canvasView.zoomScale, height: contentHeight)
+    }
+
     
     // MARK: Tool Picker Observer
     
-    /// Delegate method: Note that the tool picker has changed which part of the canvas view
-    /// it obscures, if any.
     func toolPickerFramesObscuredDidChange(_ toolPicker: PKToolPicker) {
         updateLayout(for: toolPicker)
     }
     
-    /// Delegate method: Note that the tool picker has become visible or hidden.
     func toolPickerVisibilityDidChange(_ toolPicker: PKToolPicker) {
         updateLayout(for: toolPicker)
     }
     
-    /// Helper method to adjust the canvas view size when the tool picker changes which part
-    /// of the canvas view it obscures, if any.
-    ///
-    /// Note that the tool picker floats over the canvas in regular size classes, but docks to
-    /// the canvas in compact size classes, occupying a part of the screen that the canvas
-    /// could otherwise use.
+   
     func updateLayout(for toolPicker: PKToolPicker) {
         let obscuredFrame = toolPicker.frameObscured(in: view)
         
@@ -232,14 +242,12 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
         // redo buttons.
         else {
             canvasView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: view.bounds.maxY - obscuredFrame.minY, right: 0)
-            navigationItem.leftBarButtonItems = [undoBarButtonitem, redoBarButtonItem]
         }
         canvasView.scrollIndicatorInsets = canvasView.contentInset
     }
     
     // MARK: Screenshot Service Delegate
     
-    /// Delegate method: Generate a screenshot as a PDF.
     func screenshotService(
         _ screenshotService: UIScreenshotService,
         generatePDFRepresentationWithCompletion completion:
@@ -290,5 +298,107 @@ class DrawingViewController: UIViewController, PKCanvasViewDelegate, PKToolPicke
             // Invoke the completion handler with the generated PDF data.
             completion(mutableData as Data, 0, visibleRectInPDF)
         }
+    }
+    
+    @objc func sendD (notification: NSNotification) {
+
+      if let image = notification.userInfo?["image"] as? Data {
+      // do something with your image
+        if mcSession.connectedPeers.count > 0 {
+            do {
+                try mcSession.send(image, toPeers: mcSession.connectedPeers, with: .reliable)
+            }catch{
+                fatalError("Could not send todo item")
+            }
+        
+      }
+      }
+     }
+    // MARK: - Multipeer Connectivity
+    
+    func sendTodo (_ dataModel:DataModel) {
+        if mcSession.connectedPeers.count > 0 {
+            dataModelController.loadData()
+            if let todoData = dataModelController.getDataFromModel() {
+                do {
+                    try mcSession.send(todoData, toPeers: mcSession.connectedPeers, with: .reliable)
+                }catch{
+                    fatalError("Could not send todo item")
+                }
+            }
+        }else{
+            print("you are not connected to another device")
+        }
+    }
+    
+    @IBAction func showConnectivityActions(_ sender: Any) {
+      
+        
+    }
+    
+    func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
+        switch state {
+        case MCSessionState.connected:
+            DispatchQueue.main.async {
+                self.offOnlineLabel.text = "Live - \(self.mcSession.connectedPeers.count)"
+                self.offOnlineLabel.textColor = .green
+            }
+            
+        case MCSessionState.connecting:
+            print("Connecting: \(peerID.displayName)")
+            
+        case MCSessionState.notConnected:
+            print("Not Connected: \(peerID.displayName)")
+            DispatchQueue.main.async {
+                self.offOnlineLabel.text = "Offline"
+                self.offOnlineLabel.textColor = .darkGray
+            }
+        }
+    }
+    
+    func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
+        
+        do {
+            let decoder = PropertyListDecoder()
+            let dataModel = try decoder.decode(DataModel.self, from: data)
+      
+            dataModelController.saveDataModel(dataD: dataModel)
+       
+            DispatchQueue.main.async {
+               
+                self.canvasView.drawing = self.dataModelController.drawings[self.drawingIndex]
+                self.canvasView.alwaysBounceVertical = true
+                for i in dataModel.drawings
+                {
+                    self.updateContentSizeForDrawingFromSender(canvas:i)
+                }
+             
+            }
+            
+        }catch{
+            fatalError("Unable to process recieved data")
+        }
+        
+    }
+    
+    func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
+        
+    }
+    
+    func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {
+        
+    }
+    
+    func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL?, withError error: Error?) {
+        
+    }
+    
+    
+    func browserViewControllerDidFinish(_ browserViewController: MCBrowserViewController) {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func browserViewControllerWasCancelled(_ browserViewController: MCBrowserViewController) {
+        dismiss(animated: true, completion: nil)
     }
 }

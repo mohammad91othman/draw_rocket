@@ -1,9 +1,4 @@
-/*
-See LICENSE folder for this sample’s licensing information.
 
-Abstract:
-`PencilKitDrawNavigationController` turns off the navigation bar background as it will affect latency.
-*/
 
 import UIKit
 

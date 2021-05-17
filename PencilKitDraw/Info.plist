@@ -20,6 +20,17 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>DrawRocket would like to access your Network to connect you with nearbay users</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>DrawRocket would like to access your Network to connect you with nearbay users</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_ba-td._tcp</string>
+		<string>_ba-td._udp</string>
+	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>DrawRocket would like to access your Network to connect you with nearbay users</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

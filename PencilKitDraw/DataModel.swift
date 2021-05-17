@@ -1,19 +1,3 @@
-/*
-See LICENSE folder for this sample’s licensing information.
-
-Abstract:
-The app's data model for storing drawings, thumbnails, and signatures.
-*/
-
-/// Underlying the app's data model is a cross-platform `PKDrawing` object. `PKDrawing` adheres to `Codable`
-/// in Swift, or you can fetch its data representation as a `Data` object through its `dataRepresentation()`
-/// method. `PKDrawing` is the only PencilKit type supported on non-iOS platforms.
-
-/// From `PKDrawing`'s `image(from:scale:)` method, you can get an image to save, or you can transform a
-/// `PKDrawing` and append it to another drawing.
-
-/// If you already have some saved `PKDrawing`s, you can make them available in this sample app by adding them
-/// to the project's "Assets" catalog, and adding their asset names to the `defaultDrawingNames` array below.
 
 import UIKit
 import PencilKit
@@ -31,6 +15,16 @@ struct DataModel: Codable {
     /// The drawings that make up the current data model.
     var drawings: [PKDrawing] = []
     var signature = PKDrawing()
+    
+    var itemIdentifier:UUID
+    
+    func saveItem() {
+        DataModelController.save(self, with: "\(itemIdentifier.uuidString)")
+    }
+    
+  
+    
+  
 }
 
 /// `DataModelControllerObserver` is the behavior of an observer of data model changes.
@@ -41,9 +35,9 @@ protocol DataModelControllerObserver {
 
 /// `DataModelController` coordinates changes to the data  model.
 class DataModelController {
-    
+    var selecgedData : Data?
     /// The underlying data model.
-    var dataModel = DataModel()
+    var dataModel = DataModel(itemIdentifier: UUID())
     
     /// Thumbnail images representing the drawings in the data model.
     var thumbnails = [UIImage]()
@@ -55,7 +49,13 @@ class DataModelController {
             }
         }
     }
-    
+    static func getDocumentDirectory () -> URL {
+        if let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            return url
+        }else{
+            fatalError("Unable to get document directory")
+        }
+    }
     /// Dispatch queues for the background operations done by this controller.
     private let thumbnailQueue = DispatchQueue(label: "ThumbnailQueue", qos: .background)
     private let serializationQueue = DispatchQueue(label: "SerializationQueue", qos: .background)
@@ -84,6 +84,11 @@ class DataModelController {
     
     /// Update a drawing at `index` and generate a new thumbnail.
     func updateDrawing(_ drawing: PKDrawing, at index: Int) {
+        dataModel.drawings[index] = drawing
+        generateThumbnail(index)
+        saveDataModel()
+    }
+    func updateDrawing2(_ drawing: PKDrawing, at index: Int) {
         dataModel.drawings[index] = drawing
         generateThumbnail(index)
         saveDataModel()
@@ -149,9 +154,22 @@ class DataModelController {
             }
         }
     }
+    func saveDataModel(dataD: DataModel) {
+       // let savingDataModel = dataModel
+        let url = saveURL
+        serializationQueue.async {
+            do {
+                let encoder = PropertyListEncoder()
+                let data = try encoder.encode(dataD)
+                try data.write(to: url)
+            } catch {
+                os_log("Could not save data model: %s", type: .error, error.localizedDescription)
+            }
+        }
+    }
     
     /// Load the data model from persistent storage
-    private func loadDataModel() {
+     func loadDataModel() {
         let url = saveURL
         serializationQueue.async {
             // Load the data model, or the initial test data.
@@ -175,10 +193,47 @@ class DataModelController {
             }
         }
     }
+    func loadData()  {
+        
+        let savingDataModel = dataModel
+        let url = saveURL
+        serializationQueue.async {
+            do {
+                let encoder = PropertyListEncoder()
+                let data = try encoder.encode(savingDataModel)
+                let imageDataDict:[String: Data] = ["image": data]
+                NotificationCenter.default.post(name: NSNotification.Name(rawValue: "sendD"), object: nil, userInfo: imageDataDict)
+                try data.write(to: url)
+                
+            } catch {
+                os_log("Could not save data model: %s", type: .error, error.localizedDescription)
+            }
+        }
+        
+   }
+    func getDataFromModel () -> Data?
+    {
+        return selecgedData
+    }
+   
     
+    static func save <T:Encodable> (_ object:T, with fileName:String) {
+        let url = getDocumentDirectory().appendingPathComponent(fileName, isDirectory: false)
+        
+        let encoder = JSONEncoder()
+        do {
+            let data = try encoder.encode(object)
+            if FileManager.default.fileExists(atPath: url.path) {
+                try FileManager.default.removeItem(at: url)
+            }
+            FileManager.default.createFile(atPath: url.path, contents: data, attributes: nil)
+        }catch{
+            fatalError(error.localizedDescription)
+        }
+    }
     /// Construct an initial data model when no data model already exists.
     private func loadDefaultDrawings() -> DataModel {
-        var testDataModel = DataModel()
+        var testDataModel = DataModel(itemIdentifier: UUID())
         for sampleDataName in DataModel.defaultDrawingNames {
             guard let data = NSDataAsset(name: sampleDataName)?.data else { continue }
             if let drawing = try? PKDrawing(data: data) {

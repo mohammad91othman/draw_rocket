@@ -1,9 +1,3 @@
-/*
-See LICENSE folder for this sample’s licensing information.
-
-Abstract:
-The thumbnail cell for showing thumbnails in ThumbnailCollectionViewController.
-*/
 
 import UIKit
 

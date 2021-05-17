@@ -1,13 +1,3 @@
-/*
-See LICENSE folder for this sample’s licensing information.
-
-Abstract:
-`SignatureViewController` shows the signature pane.
-*/
-
-/// The signature pane is an example of a canvas that may not want a tool palette. By
-/// setting itself as first responder, but not associating itself with a tool palette, the
-/// signature pane canvas ensures that the palette hides when it becomes first responder.
 
 import UIKit
 import PencilKit
